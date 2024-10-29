@@ -91,7 +91,7 @@ public class HandEvaluation {
             return false;
         }
         else if(cardsOfSuit.size() >= 5){
-            return cardsInStraightFlush.get(4) - cardsInStraightFlush.get(0) == 4;
+            return (cardsInStraightFlush.get(4) - cardsInStraightFlush.get(0) == 4) || (cardsInStraightFlush.get(5) - cardsInStraightFlush.get(1) == 4);
         }
         else {
             return false;
@@ -140,12 +140,7 @@ public class HandEvaluation {
                 cardsOfSuit.add(card);
             }
         }
-        if(cardsOfSuit.size() < 5) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return cardsOfSuit.size() >= 5;
     }
 
     public boolean isStraight(ArrayList<Card> hand) {
@@ -158,7 +153,7 @@ public class HandEvaluation {
             return false;
         }
         else if(cardsInStraight.size() >= 5){
-            return cardsInStraight.get(4) - cardsInStraight.get(0) == 4;
+            return (cardsInStraight.get(4) - cardsInStraight.get(0) == 4) || (cardsInStraight.get(5) - cardsInStraight.get(1) == 4) || (cardsInStraight.get(6) - cardsInStraight.get(2) == 4);
         }
         else {
             return false;
