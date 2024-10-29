@@ -21,15 +21,11 @@ public class Player {
         return cardsInHand;
     }
 
-    public float evalHands(ArrayList<Card> communityCards, Player[] players) {
-        for(Player player : players) {
-            for(Card card : communityCards) {
-                player.hand.add(card);
-            }
-        }
-
+    public float evalPlayerHand(ArrayList<Card> communityCards, Player[] players) {
+        HandEvaluation handEval = new HandEvaluation();
+        return handEval.evalHands(communityCards, players, this.hand, this);
         
-        
-        return 0.2f;
     }
+
+    public raise
 }

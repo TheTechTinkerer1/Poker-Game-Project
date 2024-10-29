@@ -3,37 +3,47 @@ import java.util.Collections;
 
 public class HandEvaluation {
      
-    public float evalHands(ArrayList<Card> communityCards, Player[] players) {
+    public float evalHands(ArrayList<Card> communityCards, Player[] players, ArrayList<Card> hand, Player person) {
         float rating = 0.0f;
-        for(Player player : players) {
-            for(Card card : communityCards) {
-                player.hand.add(card);
-            }
+        
+        for(Card card : communityCards) {
+            person.hand.add(card);
         }
-        if(isRoyalFlush(communityCards, "Hearts") || isRoyalFlush(communityCards, "Diamonds") || isRoyalFlush(communityCards, "Clubs") || isRoyalFlush(communityCards, "Spades")) {
+        
+        if(isRoyalFlush(hand, "Hearts") || isRoyalFlush(hand, "Diamonds") || isRoyalFlush(hand, "Clubs") || isRoyalFlush(hand, "Spades")) {
                 rating = 1.0f;
             
         }
-        else if(isStraightFlush(communityCards, "Hearts") || isStraightFlush(communityCards, "Diamonds") || isStraightFlush(communityCards, "Clubs") || isStraightFlush(communityCards, "Spades")) {
+        else if(isStraightFlush(hand, "Hearts") || isStraightFlush(hand, "Diamonds") || isStraightFlush(hand, "Clubs") || isStraightFlush(hand, "Spades")) {
                 rating = 0.9f;
             
         }
-        else if(isFourOfAKind(communityCards)){
+        else if(isFourOfAKind(hand)){
                 rating = 0.8f;
             
         }
-        else if(isFullHouse(communityCards)){
+        else if(isFullHouse(hand)){
             rating = 0.7f;
         }
-        else if(isFlush(communityCards, "Hearts") || isFlush(communityCards, "Diamonds") || isFlush(communityCards, "Clubs") || isFlush(communityCards, "Spades")){
+        else if(isFlush(hand, "Hearts") || isFlush(hand, "Diamonds") || isFlush(hand, "Clubs") || isFlush(hand, "Spades")){
             rating = 0.6f;
         }
-        else if(isStraight(communityCards)){
+        else if(isStraight(hand)){
             rating = 0.5f;
         }
-        
-
-        return 0.2f;
+        else if(isThreeOfAKind(hand)){
+            rating = 0.4f;
+        }
+        else if(isTwoPair(hand)){
+            rating = 0.3f;
+        }
+        else if(isPair(hand)){
+            rating = 0.2f;
+        }
+        else {
+            rating = 0.1f;
+        }
+        return rating;
     }
 
     public boolean isRoyalFlush(ArrayList<Card> hand, String suit) {
@@ -154,5 +164,46 @@ public class HandEvaluation {
             return false;
         }
     }
+
+    public boolean isThreeOfAKind(ArrayList<Card> hand) {
+        int[] rankCounter = new int[13];
+        for(Card card : hand) {
+            rankCounter[card.getRank() - 2]++;
+        }
+        for(int count : rankCounter) {
+            if(count == 3) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTwoPair(ArrayList<Card> hand) {
+        int[] rankCounter = new int[13];
+        int pairCounter = 0;
+        for(Card card : hand) {
+            rankCounter[card.getRank() - 2]++;
+        }
+        for(int count : rankCounter) {
+            if(count == 2) {
+                pairCounter++;
+            }
+        }
+        return pairCounter >= 2;
+    }
+
+    public boolean isPair(ArrayList<Card> hand) {
+        int[] rankCounter = new int[13];
+        for(Card card : hand) {
+            rankCounter[card.getRank() - 2]++;
+        }
+        for(int count : rankCounter) {
+            if(count == 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
