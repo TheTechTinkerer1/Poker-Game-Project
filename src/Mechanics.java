@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -99,20 +100,80 @@ public class Mechanics {
         return playersFolded == this.players.size() - 1;
     }
 
-    public Player determineWinner() {
+    public void determineWinner(ArrayList<Card> communityCards, ArrayList<Player> players) {
         Player winner = null;
+        ArrayList<Player> multiWinners = new ArrayList<>();
         if(checkIfAllButOneFolded() == true)
         {
             for(Player player : players){
                 if(player.isFolded == false){
                     winner = player;
+                    winner.money += this.pot;
                 }
             }
-            
         }
         else {
-            //compare hands
-        }
+            ArrayList<HandEvaluation> playersEligibleForComparison = new ArrayList<>();
+            
+            for(Player player : players){
+                if(player.isFolded == false){
+                    playersEligibleForComparison.add(new HandEvaluation(player, player.evalPlayerHand(communityCards, this.players)));
+                }
+            }
+            Collections.sort(playersEligibleForComparison);
+            HandEvaluation bestHand = playersEligibleForComparison.get(0); //hand with the highest rating
+            playersEligibleForComparison.remove(0);
+            ArrayList<Player> playersWithSameRating = new ArrayList<>();
+            for(HandEvaluation he : playersEligibleForComparison){
+                 if(he.handRating > bestHand.handRating){
+                     bestHand = he;
+                 }
+                 else if(he.handRating == bestHand.handRating){
+                     playersWithSameRating.add(he.player);
+                 }   
+            }
+            if(playersWithSameRating.size() == 0){
+                winner = bestHand.player;
+            }
+            else {
+                Player[] playerHighCardRankings = new Player[playersWithSameRating.size()];
+                ArrayList<Player> playersWithSameHighCardRanking = new ArrayList<>();
+                for(Card card : communityCards){
+                    for(Player player : playersWithSameRating){
+                        player.hand.add(card);
+                    }  
+                }
+                for(Player player : playersWithSameRating){
+                    player.sortHandByRank();
+                    Collections.sort(player.hand, Collections.reverseOrder());
+                }
+                Player bestPlayer = playersWithSameRating.get(0);
+                for(Player player : playersWithSameRating){
+                    if(player.hand.get(0).getRank() > bestPlayer.hand.get(0).getRank()){
+                        bestPlayer = player;
+                        playersWithSameHighCardRanking.clear();
+                        playersWithSameHighCardRanking.add(player);
+                    }
+                    else if(player.hand.get(0).getRank() == playerHighCardRankings[0].hand.get(0).getRank()){
+                        playersWithSameHighCardRanking.add(player);
+                    }
+                }
+
+                if(playersWithSameHighCardRanking.size() == 1){
+                    winner = bestPlayer;
+                    winner.money += this.pot;
+                }
+                else {
+                   int moneyPerWinner = this.pot / playersWithSameHighCardRanking.size();
+                   for(Player player : playersWithSameHighCardRanking){
+                       player.money += moneyPerWinner;
+                   }
+
+                }
+
+            }
+            
+        } 
         return winner;
     }
 

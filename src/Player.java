@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class Player {
     public ArrayList<Card> hand;
@@ -41,7 +42,7 @@ public class Player {
         return cardsInHand;
     }
 
-    public float evalPlayerHand(ArrayList<Card> communityCards, Player[] players) {
+    public int evalPlayerHand(ArrayList<Card> communityCards, ArrayList<Player> players) {
         HandEvaluation handEval = new HandEvaluation();
         return handEval.evalHands(communityCards, players, this.hand, this);
         
@@ -49,6 +50,10 @@ public class Player {
 
     public String getName() {
         return name;
+    }
+
+    public void sortHandByRank() {
+        hand.sort(Comparator.comparing(Card::getRank));
     }
 
     

@@ -1,47 +1,58 @@
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class HandEvaluation {
-     
-    public float evalHands(ArrayList<Card> communityCards, Player[] players, ArrayList<Card> hand, Player person) {
-        float rating = 0.0f;
+public class HandEvaluation implements Comparable<HandEvaluation> {
+
+    Player player;
+    int handRating;
+
+    public HandEvaluation(Player player, int handRating) {
+        this.player = player;
+        this.handRating = handRating;
+    }
+
+    public HandEvaluation() {
+    }
+
+    public int evalHands(ArrayList<Card> communityCards, ArrayList<Player> players, ArrayList<Card> hand, Player person) {
+        int rating = 0;
         
         for(Card card : communityCards) {
             person.hand.add(card);
         }
         
         if(isRoyalFlush(hand, "Hearts") || isRoyalFlush(hand, "Diamonds") || isRoyalFlush(hand, "Clubs") || isRoyalFlush(hand, "Spades")) {
-                rating = 1.0f;
+                rating = 10;
             
         }
         else if(isStraightFlush(hand, "Hearts") || isStraightFlush(hand, "Diamonds") || isStraightFlush(hand, "Clubs") || isStraightFlush(hand, "Spades")) {
-                rating = 0.9f;
+                rating = 9;
             
         }
         else if(isFourOfAKind(hand)){
-                rating = 0.8f;
+                rating = 8;
             
         }
         else if(isFullHouse(hand)){
-            rating = 0.7f;
+            rating = 7;
         }
         else if(isFlush(hand, "Hearts") || isFlush(hand, "Diamonds") || isFlush(hand, "Clubs") || isFlush(hand, "Spades")){
-            rating = 0.6f;
+            rating = 6;
         }
         else if(isStraight(hand)){
-            rating = 0.5f;
+            rating = 5;
         }
         else if(isThreeOfAKind(hand)){
-            rating = 0.4f;
+            rating = 4;
         }
         else if(isTwoPair(hand)){
-            rating = 0.3f;
+            rating = 3;
         }
         else if(isPair(hand)){
-            rating = 0.2f;
+            rating = 2;
         }
         else {
-            rating = 0.1f;
+            rating = 1;
         }
         return rating;
     }
@@ -198,6 +209,11 @@ public class HandEvaluation {
             }
         }
         return false;
+    }
+
+    @Override
+    public int compareTo(HandEvaluation other) {
+        return Integer.compare(other.handRating, this.handRating);
     }
 
 }
