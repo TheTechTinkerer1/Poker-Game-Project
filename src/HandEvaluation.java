@@ -89,6 +89,7 @@ public class HandEvaluation implements Comparable<HandEvaluation> {
     public boolean isStraightFlush(ArrayList<Card> hand, String suit) {
         ArrayList<Card> cardsOfSuit= new ArrayList<>();
         ArrayList<Integer> cardsInStraightFlush = new ArrayList<>();
+        int consecutiveCounter = 0;
         for(Card card : hand) {
             if(card.getSuit().equals(suit)) {
                 cardsOfSuit.add(card);
@@ -101,19 +102,15 @@ public class HandEvaluation implements Comparable<HandEvaluation> {
         if(cardsOfSuit.size() < 5) {
             return false;
         }
-        int consecutiveCounter = 0;
-        for(int i = 0; i < cardsInStraightFlush.size() - 1; i++){
-            if(cardsInStraightFlush.get(i + 1) == cardsInStraightFlush.get(i) + 1){
-                consecutiveCounter++;
-            }  
+        else if(cardsOfSuit.size() >= 5){
+            for(int i = 0; i < cardsInStraightFlush.size() - 1; i++){
+                if(cardsInStraightFlush.get(i + 1) == cardsInStraightFlush.get(i) + 1){
+                    consecutiveCounter++;
+                }  
+            }
         }
         return consecutiveCounter >= 4;
 
-        
-        
-        
-        
-        
         //boolean isStraight = true;
         //for (int i = 0; i <= cardsInStraightFlush.size() - 5; i++) {
             //for (int j = 0; j < 4; j++) {
@@ -173,6 +170,7 @@ public class HandEvaluation implements Comparable<HandEvaluation> {
 
     public boolean isStraight(ArrayList<Card> hand) {
         ArrayList<Integer> cardsInStraight = new ArrayList<>();
+        int consecutiveCounter = 0;
         for(Card card : hand){
             cardsInStraight.add(card.getRank());
         }
@@ -181,11 +179,14 @@ public class HandEvaluation implements Comparable<HandEvaluation> {
             return false;
         }
         else if(cardsInStraight.size() >= 5){
-            return (cardsInStraight.get(4) - cardsInStraight.get(0) == 4) || (cardsInStraight.get(5) - cardsInStraight.get(1) == 4) || (cardsInStraight.get(6) - cardsInStraight.get(2) == 4);
+            for(int i = 0; i < cardsInStraight.size() - 1; i++){
+                if(cardsInStraight.get(i + 1) == cardsInStraight.get(i) + 1){
+                consecutiveCounter++;
+                }  
+            }
         }
-        else {
-            return false;
-        }
+        return consecutiveCounter >= 4;
+        
     }
 
     public boolean isThreeOfAKind(ArrayList<Card> hand) {
