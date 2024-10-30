@@ -101,12 +101,29 @@ public class HandEvaluation implements Comparable<HandEvaluation> {
         if(cardsOfSuit.size() < 5) {
             return false;
         }
-        else if(cardsOfSuit.size() >= 5){
-            return (cardsInStraightFlush.get(4) - cardsInStraightFlush.get(0) == 4) || (cardsInStraightFlush.get(5) - cardsInStraightFlush.get(1) == 4);
+        int consecutiveCounter = 0;
+        for(int i = 0; i < cardsInStraightFlush.size() - 1; i++){
+            if(cardsInStraightFlush.get(i + 1) == cardsInStraightFlush.get(i) + 1){
+                consecutiveCounter++;
+            }  
         }
-        else {
-            return false;
-        }
+        return consecutiveCounter >= 4;
+
+        
+        
+        
+        
+        
+        //boolean isStraight = true;
+        //for (int i = 0; i <= cardsInStraightFlush.size() - 5; i++) {
+            //for (int j = 0; j < 4; j++) {
+                //if (cardsInStraightFlush.get(i + j + 1) != cardsInStraightFlush.get(i + j) + 1) {
+                    //isStraight = false;
+                    //break;
+                //}
+            //}
+        //}
+        //return isStraight;
     }
     public boolean isFourOfAKind(ArrayList<Card> hand) {
         for(Card card : hand) {

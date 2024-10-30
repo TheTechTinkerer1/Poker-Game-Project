@@ -99,10 +99,13 @@ public class Mechanics {
     
     }
 
-    public boolean allPlayersCheckedorFolded() {
+    public boolean allPlayersCheckedorFoldedorAllIn() {
         for(Player player : this.players){
-            if(player.isChecked == false && player.isFolded == false){
+            if(!player.isChecked && !player.isFolded && !player.isAllIn){
                 return false;
+            }
+            else {
+                return true;
             }
         }
         return true;
@@ -193,6 +196,7 @@ public class Mechanics {
                     Collections.sort(player.hand, Collections.reverseOrder());
                 }
                 Player bestPlayer = playersWithSameRating.get(0);
+                playerHighCardRankings[0] = bestPlayer; 
                 for(Player player : playersWithSameRating){
                     if(player.hand.get(0).getRank() > bestPlayer.hand.get(0).getRank()){
                         bestPlayer = player;
@@ -239,7 +243,7 @@ public class Mechanics {
         }
        
         while(!this.isBettingRoundOver) {
-            if(allPlayersCheckedorFolded() || checkIfAllButOneFolded()) {
+            if(allPlayersCheckedorFoldedorAllIn() || checkIfAllButOneFolded()) {
                 this.isBettingRoundOver = true;
                 break;
             }
