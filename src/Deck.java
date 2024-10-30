@@ -55,12 +55,14 @@ public class Deck {
         this.communityCards.add(cards.remove(0));
         System.out.println("Flop has been drawn");  
         System.out.println("The flop is: " + communityCards.get(0).getName() + " of " + communityCards.get(0).getSuit() + ", " + communityCards.get(1).getName() + " of " + communityCards.get(1).getSuit() + ", " + communityCards.get(2).getName() + " of " + communityCards.get(2).getSuit());
+        System.out.println(this.communityCards.size());
     }
 
     public void drawTurn() {
         this.discardPile.add(cards.remove(0));
         System.out.println("Burn card has been drawn and added to the discard pile.");
         this.communityCards.add(cards.remove(0));
+        System.out.println(communityCards.size());
         System.out.println("Turn has been drawn");
         System.out.println("The turn is: " + communityCards.get(3).getName() + " of " + communityCards.get(3).getSuit());
     }

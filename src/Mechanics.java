@@ -20,7 +20,7 @@ public class Mechanics {
 
 
     public Mechanics(int smallBlind, int bigBlind) {
-        this.dealerIndex = -1;
+        this.dealerIndex = 0;
         this.players = new ArrayList<>(10);
         this.pot = 0;
         this.currentBet = 0;
@@ -36,7 +36,7 @@ public class Mechanics {
     }
 
     public Mechanics() {
-        this.dealerIndex = -1;
+        this.dealerIndex = 0;
         this.players = new ArrayList<>();
         this.pot = 0;
         this.currentBet = 0;
@@ -67,8 +67,8 @@ public class Mechanics {
     }
 
     public void assignBlinds() {
-        int smallBlindIndex = (dealerIndex + 1) % this.players.size();
-        int bigBlindIndex = (dealerIndex + 2) % this.players.size();
+        int smallBlindIndex = (this.dealerIndex + 1) % this.players.size();
+        int bigBlindIndex = (this.dealerIndex + 2) % this.players.size();
 
         for(Player player : this.players){
             player.isSmallBlind = false;
@@ -78,18 +78,24 @@ public class Mechanics {
         this.players.get(smallBlindIndex).isSmallBlind = true;
         this.players.get(bigBlindIndex).isBigBlind = true;
 
-        for(Player player : this.players){
-            if(player.isSmallBlind){
-                player.money -= this.smallBlind;
-                this.pot += this.smallBlind;
-                System.out.println(player.name + " is the small blind and bets " + this.smallBlind);
-            }
-            else if(player.isBigBlind){
-                player.money -= this.bigBlind;
-                this.pot += this.bigBlind;
-                System.out.println(player.name + " is the big blind and bets " + this.bigBlind);
-            }
-        }
+        
+    }
+
+    public void enforceBlinds(){
+    
+            this.players.get(this.dealerIndex + 1).money -= this.smallBlind;
+            this.pot += this.smallBlind;
+            System.out.println(this.players.get(this.dealerIndex + 1).name + " is the small blind and bets " + this.smallBlind);
+            this.players.get((this.dealerIndex + 1) % this.players.size()).playerCurrentBet = this.smallBlind;
+            
+        
+            this.players.get(this.dealerIndex + 2).money -= this.bigBlind;
+            this.pot += this.bigBlind;
+            System.out.println(this.players.get(this.dealerIndex + 2).name + " is the big blind and bets " + this.bigBlind);
+            this.currentBet = this.bigBlind;
+            this.players.get((this.dealerIndex + 2) % this.players.size()).playerCurrentBet = this.bigBlind;
+            this.playerTurn += 3;
+        
     }
 
     public void rotateDealer() {
@@ -103,9 +109,6 @@ public class Mechanics {
         for(Player player : this.players){
             if(!player.isChecked && !player.isFolded && !player.isAllIn){
                 return false;
-            }
-            else {
-                return true;
             }
         }
         return true;
@@ -128,18 +131,24 @@ public class Mechanics {
             player.isChecked = false;
             player.playerCurrentBet = 0;
             player.yourMaxRaises = 3;
-            for(Card card : player.hand){
-                deck.cards.add(card);
-                player.hand.remove(card);
+            for(int i = 0; i < player.hand.size(); i++){
+                deck.cards.add(player.hand.get(i));
+                player.hand.remove(player.hand.get(i));
+                i--;
             }
         }
-        for(Card card : deck.communityCards){
-            deck.cards.add(card);
-            deck.communityCards.remove(card);
-        }
-        for(Card card : deck.discardPile){
-            deck.cards.add(card);
-            deck.discardPile.remove(card);
+        if(isRoundOver == true){
+            for(int i = 0; i < deck.communityCards.size(); i++){
+                deck.cards.add(deck.communityCards.get(i));
+                deck.communityCards.remove(deck.communityCards.get(i));
+                i--;
+            }
+            for(int i = 0; i < deck.discardPile.size(); i++){
+                deck.cards.add(deck.discardPile.get(i));
+                deck.discardPile.remove(deck.discardPile.get(i));
+                i--;
+            }
+            rotateDealer();
         }
         this.isRoundOver = false;
         this.isBettingRoundOver = false;
@@ -180,7 +189,7 @@ public class Mechanics {
                      playersWithSameRating.add(he.player);
                  }   
             }
-            if(playersWithSameRating.size() == 0){
+            if(playersWithSameRating.isEmpty()){
                 winner = bestHand.player;
             }
             else {
@@ -228,25 +237,12 @@ public class Mechanics {
     }
 
     public void promptPlayerTurn() {
-        if(this.players.get(this.playerTurn).isSmallBlind == true) {
-            this.players.get(this.playerTurn).money -= this.smallBlind;
-            this.pot += this.smallBlind;
-            System.out.println(this.players.get(this.playerTurn).name + " is the small blind and bets " + this.smallBlind);
-            this.playerTurn++;
-        }
-        else if(this.players.get(this.playerTurn).isBigBlind == true) {
-            this.players.get(this.playerTurn).money -= this.bigBlind;
-            this.pot += this.bigBlind;
-            System.out.println(this.players.get(this.playerTurn).name + " is the big blind and bets " + this.bigBlind);
-            this.currentBet = this.bigBlind;
-            this.playerTurn++;
-        }
-       
-        while(!this.isBettingRoundOver) {
+        while(this.isBettingRoundOver == false) {
             if(allPlayersCheckedorFoldedorAllIn() || checkIfAllButOneFolded()) {
                 this.isBettingRoundOver = true;
                 break;
             }
+            
         
             if(this.playerTurn >= this.players.size()) {
                 this.playerTurn = 0;
@@ -268,12 +264,12 @@ public class Mechanics {
                         Scanner scanner = new Scanner(System.in);
                         int choice = scanner.nextInt();
                         switch(choice){
-                            case 1:
+                            case 1 -> {
                                 this.players.get(this.playerTurn).isFolded = true;
                                 this.playerTurn = this.playerTurn + 1;
                                 isValidChoice = true;
-                                break;
-                            case 2:
+                            }
+                            case 2 -> {
                                 if(this.isCheckorCall.equals("check")) {
                                     this.players.get(this.playerTurn).isChecked = true;
                                     this.playerTurn = this.playerTurn + 1;
@@ -296,8 +292,8 @@ public class Mechanics {
                                         
                                     }
                                 }
-                                break;
-                            case 3:
+                            }
+                            case 3 -> {
                                 if(players.get(this.playerTurn).yourMaxRaises > 0) {
                                     if(this.players.get(this.playerTurn).money < this.currentBet - this.players.get(this.playerTurn).playerCurrentBet) {
                                         System.out.println("You cannot raise because you don't have enough money");
@@ -327,15 +323,15 @@ public class Mechanics {
                                     
                                     
                                 }
-                                break;
-                            case 4: 
+                            }
+                            case 4 -> { 
                                 this.players.get(this.playerTurn).isAllIn = true;
                                 this.players.get(this.playerTurn).playerCurrentBet += this.players.get(this.playerTurn).money;
                                 this.pot += this.players.get(this.playerTurn).money;
                                 this.players.get(this.playerTurn).money = 0;
                                 this.playerTurn = this.playerTurn + 1;      
                                 isValidChoice = true;
-                                break;
+                            }
                         }
                     } catch (InputMismatchException e) {
                         System.out.println("Invalid input. Please enter a valid number");

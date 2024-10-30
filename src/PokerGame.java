@@ -45,15 +45,21 @@ public class PokerGame {
             Deck deck = new Deck();
             deck.shuffleDeck();
             deck.dealCards(mc.players);
-            System.out.println(mc.playerTurn);
+            mc.resetRound(deck);
+            mc.enforceBlinds();
             mc.promptPlayerTurn();
             deck.drawFlop();
+            mc.resetRound(deck);
             mc.promptPlayerTurn();
             deck.drawTurn();
+            mc.resetRound(deck);
             mc.promptPlayerTurn();
             deck.drawRiver();
+            mc.resetRound(deck);
             mc.promptPlayerTurn();
             mc.determineWinner(deck.communityCards, mc.players);
+            mc.isRoundOver = true;
+            mc.resetRound(deck);
             
         }
 
