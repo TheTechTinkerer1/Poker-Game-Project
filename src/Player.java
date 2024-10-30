@@ -2,7 +2,7 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class Player {
+public class Player implements Comparator<Player> {
     public ArrayList<Card> hand;
     public int money;
     public int playerCurrentBet;
@@ -15,7 +15,7 @@ public class Player {
     public boolean isAllIn;
     public boolean isWinner;
     public boolean isChecked;
-
+    public boolean isTheRaiser;
     
 
     public Player(ArrayList<Card> cards,int money, String name) {
@@ -31,15 +31,22 @@ public class Player {
         this.isAllIn = false;
         this.isWinner = false;
         this.isChecked = false;
+        this.isTheRaiser = false;
+
     
     }
 
-    public String handCheck() {
+    public Player(){
+
+    }
+
+    public void handCheck() {
+        System.out.println(this.hand.size());
         String cardsInHand = "";
-        for(Card card : hand) {
+        for(Card card : this.hand) {
             cardsInHand += card.getName() + " of " + card.getSuit() + " ";
         }
-        return cardsInHand;
+        System.out.println("These are the cards in your hands: " + cardsInHand);
     }
 
     public int evalPlayerHand(ArrayList<Card> communityCards, ArrayList<Player> players) {
@@ -54,6 +61,15 @@ public class Player {
 
     public void sortHandByRank() {
         hand.sort(Comparator.comparing(Card::getRank));
+    }
+
+    public int getPlayerCurrentBet() {
+        return playerCurrentBet;
+    }
+
+    @Override
+    public int compare(Player o1, Player o2) {
+        return Integer.compare(o1.getPlayerCurrentBet(), o2.getPlayerCurrentBet());
     }
 
     

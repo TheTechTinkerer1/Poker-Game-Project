@@ -17,6 +17,7 @@ public class Mechanics {
     public boolean isBettingRoundOver;
     public String isCheckorCall;
     public static boolean isGameOver;
+    public Player lastRaiser;
 
 
     public Mechanics(int smallBlind, int bigBlind) {
@@ -33,6 +34,7 @@ public class Mechanics {
         this.isBettingRoundOver = false;
         this.isGameOver = false;
         this.isCheckorCall = "check";
+        this.lastRaiser = null;
     }
 
     public Mechanics() {
@@ -53,17 +55,6 @@ public class Mechanics {
 
     public void setDealer(Player dealer) {
         this.dealer = dealer;
-    }
-
-    public void startRound() {
-        this.round++;
-        System.out.println("Round " + this.round + " has started");
-        this.rotateDealer();
-        this.assignBlinds();
-        Deck deck = new Deck();
-        deck.shuffleDeck();
-        deck.dealCards(this.players);
-
     }
 
     public void assignBlinds() {
@@ -92,8 +83,11 @@ public class Mechanics {
             this.players.get(this.dealerIndex + 2).money -= this.bigBlind;
             this.pot += this.bigBlind;
             System.out.println(this.players.get(this.dealerIndex + 2).name + " is the big blind and bets " + this.bigBlind);
+            this.players.get(this.dealerIndex + 2).isTheRaiser = true;
+            this.lastRaiser = this.players.get(this.dealerIndex + 2);
             this.currentBet = this.bigBlind;
             this.players.get((this.dealerIndex + 2) % this.players.size()).playerCurrentBet = this.bigBlind;
+
             this.playerTurn += 3;
         
     }
@@ -131,11 +125,16 @@ public class Mechanics {
             player.isChecked = false;
             player.playerCurrentBet = 0;
             player.yourMaxRaises = 3;
-            for(int i = 0; i < player.hand.size(); i++){
-                deck.cards.add(player.hand.get(i));
-                player.hand.remove(player.hand.get(i));
-                i--;
+            player.isTheRaiser = false;
+            this.lastRaiser = null;
+            if(isRoundOver == true){
+                for(int i = 0; i < player.hand.size(); i++){
+                    deck.cards.add(player.hand.get(i));
+                    player.hand.remove(player.hand.get(i));
+                    i--;
+                }
             }
+            
         }
         if(isRoundOver == true){
             for(int i = 0; i < deck.communityCards.size(); i++){
@@ -148,17 +147,30 @@ public class Mechanics {
                 deck.discardPile.remove(deck.discardPile.get(i));
                 i--;
             }
+            this.isRoundOver = false;
+            this.pot = 0;
             rotateDealer();
+            
         }
-        this.isRoundOver = false;
         this.isBettingRoundOver = false;
         this.currentBet = 0;
-        this.pot = 0;
+        
 
+    }
+
+    public Player getPlayerWithGreatestBet() {
+        Player playerRaiser = null;
+        for(Player player : this.players){
+            if(player.isTheRaiser == true){
+                playerRaiser = player;
+            }
+        }
+        return playerRaiser;
     }
 
     public void determineWinner(ArrayList<Card> communityCards, ArrayList<Player> players) {
         Player winner = null;
+        HandEvaluation handEval = new HandEvaluation();
         if(checkIfAllButOneFolded() == true)
         {
             for(Player player : players){
@@ -166,6 +178,7 @@ public class Mechanics {
                     winner = player;
                     winner.money += this.pot;
                     isRoundOver = true;
+                    System.out.println(winner.name + " has won the round with " + handEval.getHandName(player.evalPlayerHand(communityCards, players)) + "and recieves " + this.pot);
                 }
             }
         }
@@ -220,12 +233,15 @@ public class Mechanics {
                 if(playersWithSameHighCardRanking.size() == 1){
                     winner = bestPlayer;
                     winner.money += this.pot;
+                    System.out.println(winner.name + " has won the round with " + handEval.getHandName(winner.evalPlayerHand(communityCards, players)) + "and recieves " + this.pot);
                     isRoundOver = true;
+                    
                 }
                 else {
                    int moneyPerWinner = this.pot / playersWithSameHighCardRanking.size();
                    for(Player player : playersWithSameHighCardRanking){
                        player.money += moneyPerWinner;
+                       System.out.println(player.name + " is a winner  " + handEval.getHandName(player.evalPlayerHand(communityCards, players)) + "and recieves a split of " + this.pot + "from the pot");
                    }
                    isRoundOver = true;
 
@@ -236,14 +252,12 @@ public class Mechanics {
         }
     }
 
-    public void promptPlayerTurn() {
+    public void promptPlayerTurn(Deck deck) {
         while(this.isBettingRoundOver == false) {
             if(allPlayersCheckedorFoldedorAllIn() || checkIfAllButOneFolded()) {
                 this.isBettingRoundOver = true;
                 break;
             }
-            
-        
             if(this.playerTurn >= this.players.size()) {
                 this.playerTurn = 0;
             }
@@ -251,44 +265,58 @@ public class Mechanics {
                 System.out.println(this.players.get(this.playerTurn).name + " it is your turn");
                 if(this.players.get(this.playerTurn).playerCurrentBet == currentBet){
                     System.out.println("Would you like to 1. fold, 2. check, 3. raise, or go 4. ALL-IN?");
+                    System.out.println("You can also 5. look at your cards, 6. look at community cards, or 7. look at pot");
                     this.isCheckorCall = "check";
                 }
                 else {
-                    System.out.println("Would you like to 1. fold, 2. call, 3.raise, or go 4. ALL-IN?");
+                    System.out.println("Would you like to 1. fold, 2. call, 3. raise, or go 4. ALL-IN?");
+                    System.out.println("You can also 5. look at your cards, 6. look at community cards, or 7. look at pot");
                     this.isCheckorCall = "call";
                 }   
                 System.out.println("Type the number of your answer");
                 boolean isValidChoice = false;
-                while(isValidChoice == false) {
+                boolean not567 = false;
+                Scanner scanner = new Scanner(System.in);
+                while(isValidChoice == false && not567 == false) {
                     try {
-                        Scanner scanner = new Scanner(System.in);
                         int choice = scanner.nextInt();
                         switch(choice){
                             case 1 -> {
                                 this.players.get(this.playerTurn).isFolded = true;
                                 this.playerTurn = this.playerTurn + 1;
                                 isValidChoice = true;
+                                not567 = true;
+                                System.out.println(this.players.get(this.playerTurn).name + " has folded.");
                             }
                             case 2 -> {
                                 if(this.isCheckorCall.equals("check")) {
                                     this.players.get(this.playerTurn).isChecked = true;
+                                    System.out.println(this.players.get(this.playerTurn).name + " has checked.");
                                     this.playerTurn = this.playerTurn + 1;
                                     isValidChoice = true;
+                                    not567 = true;
+                                    
                                     
                                 }
                                 else {
+                                    int callAmount = this.currentBet - this.players.get(this.playerTurn).playerCurrentBet;
                                     if(this.players.get(this.playerTurn).money < this.currentBet - this.players.get(this.playerTurn).playerCurrentBet) {
                                         System.out.println("You do not have enough money to call");
                                         System.out.println("You can only go ALL-IN, or fold");
                                         isValidChoice = false;
+                                        not567 = true;
                                         
                                     }
                                     else {
-                                        this.players.get(this.playerTurn).playerCurrentBet += this.currentBet - this.players.get(this.playerTurn).playerCurrentBet;
-                                        this.players.get(this.playerTurn).money -= this.players.get(this.playerTurn).playerCurrentBet;
-                                        this.pot += this.currentBet - this.players.get(this.playerTurn).playerCurrentBet;
+                                        Player playerWithGreatestBet = getPlayerWithGreatestBet();
+                                        System.out.println(this.players.get(this.playerTurn).name + " has matched " + playerWithGreatestBet.name + "'s bet and added " + callAmount + " to the pot.");
+                                        this.players.get(this.playerTurn).playerCurrentBet += callAmount;
+                                        this.players.get(this.playerTurn).money -= callAmount;
+                                        System.out.println(this.players.get(this.playerTurn).playerCurrentBet);
+                                        this.pot += callAmount;
                                         this.playerTurn = this.playerTurn + 1;
                                         isValidChoice = true;
+                                        not567 = true;
                                         
                                     }
                                 }
@@ -298,6 +326,7 @@ public class Mechanics {
                                     if(this.players.get(this.playerTurn).money < this.currentBet - this.players.get(this.playerTurn).playerCurrentBet) {
                                         System.out.println("You cannot raise because you don't have enough money");
                                         isValidChoice = false;
+                                        not567 = true;
                                         
                                     }
                                     else {
@@ -307,15 +336,24 @@ public class Mechanics {
                                         if(raiseAmount > this.players.get(this.playerTurn).money) {
                                             System.out.println("You do not have enough money to raise that amount");
                                             isValidChoice = false;
+                                            not567 = true;
                                            
                                         }
                                         else {
+                                            if(this.lastRaiser != null){
+                                                this.lastRaiser.isTheRaiser = false;
+                                            }
+                                            this.players.get(this.playerTurn).isTheRaiser = true;
+                                            this.lastRaiser = this.players.get(this.playerTurn);
+                                            this.players.get(this.playerTurn).money -= raiseAmount;
                                             this.players.get(this.playerTurn).playerCurrentBet = raiseAmount + this.currentBet;
                                             this.currentBet += raiseAmount;
                                             this.players.get(this.playerTurn).yourMaxRaises--;
+                                            System.out.println(this.players.get(this.playerTurn).name + " has raised the bet by " + raiseAmount + " and added " + this.players.get(this.playerTurn).playerCurrentBet + " to the pot.");
                                             this.isBettingRoundOver = false;
                                             this.playerTurn = this.playerTurn + 1;
                                             isValidChoice = true;
+                                            not567 = true;
                                            
                                         }
                                         
@@ -323,14 +361,39 @@ public class Mechanics {
                                     
                                     
                                 }
+                                else {
+                                    System.out.println("You have reached the maximum number of raises");
+                                    isValidChoice = false;
+                                    not567 = true;
+                                }
                             }
                             case 4 -> { 
                                 this.players.get(this.playerTurn).isAllIn = true;
                                 this.players.get(this.playerTurn).playerCurrentBet += this.players.get(this.playerTurn).money;
                                 this.pot += this.players.get(this.playerTurn).money;
+                                System.out.println(this.players.get(this.playerTurn).name + " has gone ALL-IN and added " + this.players.get(this.playerTurn).money + " to the pot.");
                                 this.players.get(this.playerTurn).money = 0;
                                 this.playerTurn = this.playerTurn + 1;      
                                 isValidChoice = true;
+                                not567 = true;
+                            }
+                            case 5 -> {
+                                this.players.get(this.playerTurn).handCheck();
+                                isValidChoice = true;
+                                not567 = false;
+                            }
+                            case 6 -> {
+                                System.out.println("Community Cards: ");
+                                for(Card card : deck.communityCards){
+                                    System.out.println(card.getName() + " of " + card.getSuit());
+                                }
+                                isValidChoice = true;
+                                not567 = false;
+                            }
+                            case 7 -> {
+                                System.out.println("Pot: " + this.pot);
+                                isValidChoice = true;
+                                not567 = false;
                             }
                         }
                     } catch (InputMismatchException e) {

@@ -57,6 +57,33 @@ public class HandEvaluation implements Comparable<HandEvaluation> {
         return rating;
     }
 
+    public String getHandName(int rating) {
+        switch(rating) {
+            case 10:
+                return "Royal Flush";
+            case 9:
+                return "Straight Flush";
+            case 8:
+                return "Four of a Kind";
+            case 7:
+                return "Full House";
+            case 6:
+                return "Flush";
+            case 5:
+                return "Straight";
+            case 4:
+                return "Three of a Kind";
+            case 3:
+                return "Two Pair";
+            case 2:
+                return "Pair";
+            case 1:
+                return "High Card";
+            default:
+                return "Invalid hand rating";
+        }
+    }
+
     public boolean isRoyalFlush(ArrayList<Card> hand, String suit) {
         final ArrayList<String> cardsInRoyalFlush = new ArrayList<>();
         cardsInRoyalFlush.add("Ace");
